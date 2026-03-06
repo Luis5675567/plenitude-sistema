@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "João Silva",
+    "phone": "11988887777",
+    "enrollmentDate": "2023-01-10",
+    "dueDate": "2026-02-24",
+    "photo": null
+  },
+  {
+    "id": 2,
+    "name": "Maria Oliveira",
+    "phone": "11977776666",
+    "enrollmentDate": "2023-05-15",
+    "dueDate": "2026-03-11",
+    "photo": null
+  },
+  {
+    "id": 3,
+    "name": "Carlos Souza",
+    "phone": "11966665555",
+    "enrollmentDate": "2023-11-20",
+    "dueDate": "2026-04-05",
+    "photo": null
+  }
+]
