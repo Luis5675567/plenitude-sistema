@@ -1,0 +1,277 @@
+Crie um sistema completo de gerenciamento de alunos para academia, funcionando como um site profissional, com o nome da academia PLENITUDE.
+
+O nome do site deve aparecer como:
+
+Sistema de Gestão da Academia Plenitude
+
+O sistema deve ser bonito, moderno, rápido e fácil de usar, funcionando bem em computador, celular, tablet ou TV com navegador.
+
+O sistema deve rodar localmente no computador usando localhost, para que seja possível testar antes de publicar.
+
+Tecnologias obrigatórias
+
+O projeto deve usar:
+
+Node.js
+
+Express
+
+EJS
+
+HTML
+
+CSS
+
+JavaScript
+
+O sistema deve possuir um banco de dados programado dentro do próprio sistema, sem depender de PostgreSQL, MySQL, Supabase ou qualquer outro banco externo.
+
+Os dados devem ser armazenados dentro do próprio projeto utilizando:
+
+arquivo JSON
+ou
+
+banco de dados local programado em código
+
+Ou seja, o próprio site deve salvar e ler os dados automaticamente.
+
+Estrutura do projeto
+
+O projeto deve ser organizado da seguinte forma:
+
+academia-plenitude
+│
+├── server.js
+├── package.json
+│
+├── database
+│   └── alunos.json
+│
+├── routes
+│   └── alunos.js
+│
+├── views
+│   ├── login.ejs
+│   ├── dashboard.ejs
+│   ├── alunos.ejs
+│   ├── cadastro.ejs
+│   └── aluno.ejs
+│
+├── public
+│   ├── css
+│   │   └── style.css
+│   └── js
+│       └── script.js
+│
+└── uploads
+Sistema deve rodar em localhost
+
+O projeto deve poder ser iniciado com:
+
+npm install
+node server.js
+
+E abrir no navegador em:
+
+http://localhost:3000
+Sistema de Login
+
+O sistema deve começar com uma tela de login.
+
+Campos:
+
+usuário
+
+senha
+
+botão entrar
+
+O login deve usar express-session para manter o usuário logado.
+
+Usuário padrão:
+
+usuario: admin
+senha: admin1234
+
+Se não estiver logado, o usuário não pode acessar outras páginas.
+
+Dashboard (painel principal)
+
+Após o login, o sistema deve mostrar um painel principal com informações da academia.
+
+O dashboard deve mostrar:
+
+total de alunos cadastrados
+
+alunos com mensalidade ativa
+
+alunos com mensalidade vencida
+
+alunos com mensalidade vencendo em breve
+
+Essas informações devem aparecer em cards modernos.
+
+Cadastro de Aluno
+
+Deve existir uma página para cadastrar novos alunos.
+
+Campos do formulário:
+
+nome completo
+
+telefone
+
+data de matrícula
+
+data de vencimento
+
+foto do aluno
+
+A foto deve ser salva na pasta:
+
+uploads
+
+No banco de dados JSON deve ser salvo apenas o caminho da foto.
+
+Lista de alunos
+
+Deve existir uma página mostrando todos os alunos cadastrados.
+
+Cada aluno deve mostrar:
+
+foto
+
+nome
+
+telefone
+
+status da mensalidade
+
+Cores do status:
+
+🟢 verde → mensalidade ativa
+🟡 amarelo → vencendo em breve
+🔴 vermelho → mensalidade vencida
+
+Também deve existir uma barra de pesquisa para encontrar alunos digitando:
+
+nome
+
+telefone
+
+Ficha do aluno
+
+Ao clicar em um aluno, abrir a ficha completa do aluno.
+
+Mostrar:
+
+foto grande
+
+nome
+
+telefone
+
+data da matrícula
+
+data de vencimento
+
+status da mensalidade
+
+Botões:
+
+renovar mensalidade
+
+editar aluno
+
+excluir aluno
+
+Renovar mensalidade
+
+O botão Renovar Mensalidade deve adicionar automaticamente:
+
++30 dias
+
+na data de vencimento.
+
+Contato WhatsApp
+
+Na ficha do aluno deve existir um botão:
+
+Enviar mensagem no WhatsApp
+
+Esse botão deve abrir o WhatsApp com uma mensagem automática como:
+
+Olá, sua mensalidade da Academia Plenitude venceu. Por favor procure a recepção para renovar.
+Design do sistema
+
+O design deve ser profissional e moderno, inspirado em academias.
+
+Cores principais:
+
+azul
+
+preto
+
+branco
+
+Adicionar:
+
+menu lateral
+
+dashboard com cards
+
+ícones
+
+animações suaves
+
+layout responsivo
+
+O sistema deve parecer um software profissional de academia.
+
+Segurança básica
+
+Implementar:
+
+rotas protegidas
+
+sessão de login
+
+validação de formulários
+
+impedir acesso sem login
+
+Objetivo do sistema
+
+O sistema deve ajudar academias pequenas a:
+
+organizar alunos
+
+controlar mensalidades
+
+identificar alunos por foto
+
+encontrar alunos rapidamente
+
+renovar mensalidades facilmente
+
+Tudo em um único sistema simples e profissional.
+
+O que a IA deve gerar
+
+A IA deve gerar:
+
+backend completo
+
+frontend completo
+
+banco de dados JSON
+
+rotas Express
+
+páginas EJS
+
+CSS moderno
+
+lógica do sistema
+
+Tudo 100% funcional.
