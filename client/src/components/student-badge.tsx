@@ -1,11 +1,36 @@
 import { Badge } from "@/components/ui/badge";
 import { differenceInDays, parseISO, startOfDay } from "date-fns";
+import { User } from "lucide-react";
 
+// --- PARTE DA FOTO (Círculo Azul) ---
+interface StudentBadgeProps {
+  photo?: string | null;
+  name: string;
+}
+
+export function StudentBadge({ photo, name }: StudentBadgeProps) {
+  return (
+    <div className="relative flex flex-col items-center">
+      <div className="w-48 h-48 rounded-2xl bg-secondary/30 flex items-center justify-center overflow-hidden border-2 border-primary/20">
+        {photo ? (
+          <img 
+            src={photo} 
+            alt={name} 
+            className="w-full h-full object-cover"
+            onError={(e) => (e.currentTarget.src = "")} 
+          />
+        ) : (
+          <User className="w-20 h-20 text-primary/40" />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// --- PARTE DO STATUS (Vencida/Ativa) ---
 export function StudentStatusBadge({ dueDate }: { dueDate: string }) {
-  // Ensure we compare start of day to avoid time-of-day offsets
   const today = startOfDay(new Date());
   const due = startOfDay(parseISO(dueDate));
-  
   const diffDays = differenceInDays(due, today);
 
   if (diffDays < 0) {

@@ -11,8 +11,16 @@ export const students = pgTable("students", {
   photo: text("photo"),
 });
 
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  role: text("role").default("admin"),
+});
+
 export const insertStudentSchema = createInsertSchema(students).omit({ id: true });
 export const updateStudentSchema = insertStudentSchema.partial();
 
 export type Student = typeof students.$inferSelect;
 export type InsertStudent = z.infer<typeof insertStudentSchema>;
+export type User = typeof users.$inferSelect;

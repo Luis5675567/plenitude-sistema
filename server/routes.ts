@@ -9,7 +9,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
 
-// Setup multer for file uploads
+// Configuração do multer para salvar as fotos na pasta "uploads"
 const upload = multer({
   storage: multer.diskStorage({
     destination: async (req, file, cb) => {
@@ -33,13 +33,13 @@ export async function registerRoutes(
     secret: process.env.SESSION_SECRET || 'plenitude-secret-1234',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === "production" }
+    cookie: { secure: false } 
   }));
 
-  // Serve uploaded files
+  // Servir arquivos da pasta uploads publicamente
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-  // Authentication Middleware
+  // Middleware de Autenticação
   const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (req.session && (req.session as any).user) {
       next();
@@ -48,41 +48,45 @@ export async function registerRoutes(
     }
   };
 
-  // Auth Routes
-  app.post(api.auth.login.path, (req, res) => {
+  // --- Auth Routes ---
+  app.post(api.auth.login.path, async (req, res) => {
     try {
-      const input = api.auth.login.input.parse(req.body);
-      if (input.username === "admin" && input.password === "admin1234") {
-        (req.session as any).user = { username: "admin" };
-        res.json({ message: "Login realizado com sucesso" });
+      const { username, password } = req.body;
+      const user = await storage.getUserByUsername(username);
+      if (user && user.password === password) {
+        const userData = { id: user.id, username: user.username, role: user.role };
+        (req.session as any).user = userData;
+        return res.json({ message: "Login realizado com sucesso", ...userData });
       } else {
-        res.status(401).json({ message: "Usuário ou senha incorretos" });
+        return res.status(401).json({ message: "Usuário ou senha incorretos" });
       }
     } catch (err) {
-      res.status(400).json({ message: "Dados inválidos" });
+      res.status(400).json({ message: "Erro ao processar login" });
     }
   });
 
   app.post(api.auth.logout.path, (req, res) => {
-    req.session.destroy(() => {
-      res.json({ message: "Logout realizado com sucesso" });
-    });
+    req.session.destroy(() => { res.json({ message: "Logout realizado com sucesso" }); });
   });
 
-  app.get(api.auth.me.path, requireAuth, (req, res) => {
-    res.json((req.session as any).user);
-  });
-
-  // Upload Route
-  app.post(api.upload.path, requireAuth, upload.single('photo'), (req, res) => {
-    if (!req.file) {
-      return res.status(400).json({ message: "Nenhuma foto enviada" });
+  app.get(api.auth.me.path, (req, res) => {
+    if (req.session && (req.session as any).user) {
+      res.json((req.session as any).user);
+    } else {
+      res.status(401).json({ message: "Não autorizado" });
     }
+  });
+
+  // --- Rota de Upload (Ajustada para retornar a URL correta) ---
+  app.post(api.upload.path, requireAuth, upload.single('photo'), (req, res) => {
+    if (!req.file) return res.status(400).json({ message: "Nenhuma foto enviada" });
+    
+    // Caminho que será salvo no banco de dados
     const url = `/uploads/${req.file.filename}`;
     res.json({ url });
   });
 
-  // Students Routes
+  // --- Students Routes ---
   app.get(api.students.list.path, requireAuth, async (req, res) => {
     const students = await storage.getStudents();
     res.json(students);
@@ -90,105 +94,72 @@ export async function registerRoutes(
 
   app.get(api.students.get.path, requireAuth, async (req, res) => {
     const student = await storage.getStudent(Number(req.params.id));
-    if (!student) {
-      return res.status(404).json({ message: "Aluno não encontrado" });
-    }
+    if (!student) return res.status(404).json({ message: "Aluno não encontrado" });
     res.json(student);
   });
 
   app.post(api.students.create.path, requireAuth, async (req, res) => {
     try {
-      const input = api.students.create.input.parse(req.body);
-      const student = await storage.createStudent(input);
+      // Criamos o aluno aceitando o campo "photo" enviado pelo front
+      const student = await storage.createStudent(req.body);
       res.status(201).json(student);
     } catch (err) {
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({
-          message: err.errors[0].message,
-          field: err.errors[0].path.join('.'),
-        });
-      }
-      res.status(500).json({ message: "Erro interno" });
+      res.status(400).json({ message: "Erro ao criar aluno" });
     }
   });
 
   app.put(api.students.update.path, requireAuth, async (req, res) => {
     try {
-      const input = api.students.update.input.parse(req.body);
-      const student = await storage.updateStudent(Number(req.params.id), input);
-      if (!student) {
-        return res.status(404).json({ message: "Aluno não encontrado" });
-      }
+      const student = await storage.updateStudent(Number(req.params.id), req.body);
+      if (!student) return res.status(404).json({ message: "Aluno não encontrado" });
       res.json(student);
     } catch (err) {
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({
-          message: err.errors[0].message,
-          field: err.errors[0].path.join('.'),
-        });
-      }
-      res.status(500).json({ message: "Erro interno" });
+      res.status(400).json({ message: "Erro ao atualizar aluno" });
     }
   });
 
   app.delete(api.students.delete.path, requireAuth, async (req, res) => {
     const success = await storage.deleteStudent(Number(req.params.id));
-    if (!success) {
-      return res.status(404).json({ message: "Aluno não encontrado" });
-    }
+    if (!success) return res.status(404).json({ message: "Aluno não encontrado" });
     res.status(204).send();
   });
 
   app.post(api.students.renew.path, requireAuth, async (req, res) => {
-    const student = await storage.getStudent(Number(req.params.id));
-    if (!student) {
-      return res.status(404).json({ message: "Aluno não encontrado" });
+    try {
+      const student = await storage.getStudent(Number(req.params.id));
+      if (!student) return res.status(404).json({ message: "Aluno não encontrado" });
+
+      const currentDue = new Date(student.dueDate);
+      const newDue = new Date(currentDue);
+      newDue.setDate(newDue.getDate() + 30);
+      
+      const newDueStr = newDue.toISOString().split('T')[0];
+      const updated = await storage.updateStudent(student.id, { dueDate: newDueStr });
+      
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ message: "Erro ao renovar" });
     }
-
-    const currentDue = new Date(student.dueDate);
-    const newDue = new Date(currentDue);
-    newDue.setDate(newDue.getDate() + 30);
-    
-    // Format YYYY-MM-DD
-    const newDueStr = newDue.toISOString().split('T')[0];
-
-    const updated = await storage.updateStudent(student.id, { dueDate: newDueStr });
-    res.json(updated);
   });
 
-  // Dashboard Stats
+  // --- Dashboard Stats ---
   app.get(api.dashboard.stats.path, requireAuth, async (req, res) => {
     const students = await storage.getStudents();
-    
-    let active = 0;
-    let overdue = 0;
-    let expiringSoon = 0;
-
+    let active = 0, overdue = 0, expiringSoon = 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const nextWeek = new Date(today);
     nextWeek.setDate(nextWeek.getDate() + 7);
 
     students.forEach(s => {
       const due = new Date(s.dueDate);
       due.setHours(0, 0, 0, 0);
-
-      if (due < today) {
-        overdue++;
-      } else if (due <= nextWeek) {
-        expiringSoon++;
-      } else {
-        active++;
-      }
+      if (due < today) overdue++;
+      else if (due <= nextWeek) expiringSoon++;
+      else active++;
     });
 
-    res.json({
-      total: students.length,
-      active,
-      overdue,
-      expiringSoon
-    });
+    res.json({ total: students.length, active, overdue, expiringSoon });
   });
 
   return httpServer;
